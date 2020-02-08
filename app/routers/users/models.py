@@ -1,36 +1,17 @@
-from pydantic import BaseModel
+from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
+
+from app.database import Base
 
 
-class UserBase(BaseModel):
-    """
-    If quota is 0, user is allowed unlimited resources
-    """
-    name: str = None
-    is_administrator: bool = False
-    disabled: bool = False
-    email: str = None
-    quota: int = 0
+class User(Base):
+    __tablename__ = "users"
 
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    is_administrator = Column(Boolean, default=True)
+    disabled = Column(Boolean, default=False)
+    quota = Column(Integer, default=0)
 
-class UserBaseInDB(UserBase):
-    id: int = None
-
-    class Config:
-        orm_mode = True
-
-
-class UserInDb(UserBaseInDB):
-    hashed_password: str
-
-
-class UserCreate(UserBaseInDB):
-    email: str
-    password: str
-
-
-class UserUpdate(UserBaseInDB):
-    password: str = None
-
-
-class User(UserBaseInDB):
-    pass
+    items = relationship("Item", back_populates="owner")
