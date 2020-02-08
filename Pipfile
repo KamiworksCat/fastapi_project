@@ -8,6 +8,9 @@ fastapi = "*"
 uvicorn = "*"
 pytest = "*"
 requests = "*"
+sqlalchemy = "*"
+pyjwt = "*"
+passlib = {extras = ["bcrypt"],version = "*"}
 
 [requires]
 python_version = "3.7.2"
