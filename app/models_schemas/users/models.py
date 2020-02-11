@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from app.database import Base
+from database import Base
 
 
 class User(Base):
@@ -13,5 +13,6 @@ class User(Base):
     is_administrator = Column(Boolean, default=True)
     disabled = Column(Boolean, default=False)
     quota = Column(Integer, default=0)
+    name = Column(String)
 
     items = relationship("Item", back_populates="owner")

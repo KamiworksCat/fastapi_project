@@ -17,3 +17,7 @@ class Item(ItemBase):
 
     class Config:
         orm_mode = True
+
+
+class ItemUpdate(ItemBase):
+    pass

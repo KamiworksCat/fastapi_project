@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from app.routers.items.schemas import Item
+from models_schemas.items.schemas import Item
 
 
 class UserBase(BaseModel):
