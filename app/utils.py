@@ -5,18 +5,17 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from app.config import SECRET_KEY, ALGORITHM
-from app.database import SessionLocal
-from app.routers.auth.schemas import TokenData
-from app.routers.users.utils import get_user_by_email
-from app.routers.users.schemas import User
+import crud
+from config import SECRET_KEY, ALGORITHM
+from database import db_session
+from models_schemas.auth_schemas import TokenData
+from models_schemas.users.schemas import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 
 
 def verify_password(plain_password, hashed_password):
@@ -27,8 +26,8 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def authenticate_user(db: Session, email: str, password: str):
-    user = get_user_by_email(db, email)
+def authenticate_user(db: db_session, email: str, password: str):
+    user = crud.user.get_by_email(db, email)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -61,7 +60,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except PyJWTError:
         raise credentials_exception
-    user = get_user_by_email(SessionLocal, email=token_data.email)
+    user = crud.user.get_by_email(db_session, email=token_data.email)
     if user is None:
         raise credentials_exception
     return user
