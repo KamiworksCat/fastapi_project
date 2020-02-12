@@ -1,19 +1,23 @@
 from datetime import timedelta
 
-from config import ACCESS_TOKEN_EXPIRE_MINUTES
-from database import db_session
+from sqlalchemy.orm import Session
+
+from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi import Depends, HTTPException, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
-from models_schemas.auth_schemas import Token
-from utils import authenticate_user, create_access_token
+from app.schema.auth import Token
+from app.utils import authenticate_user, create_access_token
 from starlette.status import HTTP_401_UNAUTHORIZED
+
+from app.database import get_db
 
 router = APIRouter()
 
 
 @router.post("/login/token", response_model=Token, summary="Login user for access token", tags=["login"])
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(db_session, email=form_data.username, password=form_data.password)
+async def login_for_access_token(db: Session = Depends(get_db),
+                                 form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(db, email=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,

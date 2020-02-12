@@ -7,11 +7,11 @@ from jwt import PyJWTError
 from passlib.context import CryptContext
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-import crud
-from config import SECRET_KEY, ALGORITHM
-from database import db_session
-from models_schemas.auth_schemas import TokenData
-from models_schemas.users.schemas import User
+from app import crud
+from app.config import SECRET_KEY, ALGORITHM
+from app.database import db_session
+from app.schema.auth import TokenData
+from app.schema.user import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
