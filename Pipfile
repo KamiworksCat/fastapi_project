@@ -12,6 +12,8 @@ sqlalchemy = "*"
 pyjwt = "*"
 passlib = {extras = ["bcrypt"],version = "*"}
 python-multipart = "*"
+alembic = "*"
+tenacity = "*"
 
 [requires]
 python_version = "3.7.2"
