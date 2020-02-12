@@ -1,10 +1,9 @@
-import uuid
-
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 
 
 class ItemBase(BaseModel):
-    identifier: UUID4 = uuid.uuid4()
+    identifier: str = None
+    title: str = None
 
 
 class ItemCreate(ItemBase):
@@ -13,7 +12,7 @@ class ItemCreate(ItemBase):
 
 class Item(ItemBase):
     id: int
-    owner_int: int
+    owner_id: int
 
     class Config:
         orm_mode = True

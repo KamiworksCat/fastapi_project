@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from models_schemas.items.schemas import Item
+from app.schema.item import Item
 
 
 class UserBase(BaseModel):
@@ -37,5 +37,4 @@ class UserUpdate(UserBaseInDB):
 
 
 class User(UserBaseInDB):
-    id: int
     items: List[Item] = []
