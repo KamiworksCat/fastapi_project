@@ -1,8 +1,8 @@
 """Create user item tables
 
-Revision ID: 29ab121faf5b
+Revision ID: b9592e8a9875
 Revises: 
-Create Date: 2020-02-12 14:53:38.996820
+Create Date: 2020-02-12 18:23:56.357326
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '29ab121faf5b'
+revision = 'b9592e8a9875'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -32,11 +32,11 @@ def upgrade():
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
     op.create_table('items',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('identitier', sa.String(), nullable=True),
+    sa.Column('identifier', sa.String(), nullable=True),
+    sa.Column('title', sa.String(), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('identitier')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_items_id'), 'items', ['id'], unique=False)
     # ### end Alembic commands ###
