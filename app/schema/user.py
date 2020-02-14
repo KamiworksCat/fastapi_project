@@ -10,9 +10,8 @@ class UserBase(BaseModel):
     If quota is 0, user is allowed unlimited items
     """
     name: str = None
-    is_administrator: bool = False
-    disabled: bool = False
     email: str = None
+    is_administrator: bool = False
     quota: int = 0
 
 
@@ -25,6 +24,7 @@ class UserBaseInDB(UserBase):
 
 class UserInDb(UserBaseInDB):
     hashed_password: str
+    disabled: bool = False
 
 
 class UserCreate(UserBaseInDB):
