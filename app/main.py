@@ -5,7 +5,7 @@ from starlette.responses import Response
 from app import config
 from app.database import db_session, SessionLocal
 from app.inital_data import init_db
-from routers.api_router import api_router
+from app.routers.api_router import api_router
 
 app = FastAPI(title="FastAPI Sample Project")
 
