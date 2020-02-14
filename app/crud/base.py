@@ -39,6 +39,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(skip_defaults=True)
         for field in obj_data:
+            if field == "id":
+                continue
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
         db_session.add(db_obj)
