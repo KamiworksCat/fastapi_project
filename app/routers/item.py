@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -31,11 +32,15 @@ def create_item(*, db: Session = Depends(get_db),
     """
     Create new item.
     """
+    # Check if user quota is filled before creating the item
+    if len(current_user.items) >= current_user.quota:
+        raise HTTPException(status_code=403, detail="You have already reached the max quota")
+    item_in.identifier = str(uuid.uuid4())
     item = crud.item.create_with_owner(db_session=db, obj_in=item_in, owner_id=current_user.id)
     return item
 
 
-@router.put("/{id}", response_model=Item)
+@router.put("/{item_id}", response_model=Item)
 def update_item(*, db: Session = Depends(get_db), item_id: int,
                 item_in: ItemUpdate, current_user: DBUser = Depends(get_current_active_user)):
     """
@@ -44,13 +49,14 @@ def update_item(*, db: Session = Depends(get_db), item_id: int,
     item = crud.item.get(db_session=db, obj_id=item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    if not crud.user.is_superuser(current_user) and (item.owner_id != current_user.id):
+    if not crud.user.is_administrator(current_user) and (item.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
+    item_in.identifier = str(uuid.uuid4())
     item = crud.item.update(db_session=db, db_obj=item, obj_in=item_in)
     return item
 
 
-@router.get("/{id}", response_model=Item)
+@router.get("/{item_id}", response_model=Item)
 def read_item(*, db: Session = Depends(get_db), item_id: int,
               current_user: DBUser = Depends(get_current_active_user)):
     """
@@ -64,7 +70,7 @@ def read_item(*, db: Session = Depends(get_db), item_id: int,
     return item
 
 
-@router.delete("/{id}", response_model=Item)
+@router.delete("/{item_id}", response_model=List[Item])
 def delete_item(*, db: Session = Depends(get_db), item_id: int,
                 current_user: DBUser = Depends(get_current_active_user)):
     """
@@ -75,5 +81,6 @@ def delete_item(*, db: Session = Depends(get_db), item_id: int,
         raise HTTPException(status_code=404, detail="Item not found")
     if not crud.user.is_administrator(current_user) and (item.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    item = crud.item.remove(db_session=db, id=id)
-    return item
+    crud.item.remove(db_session=db, obj_id=item_id)
+    items = crud.item.get_multi_by_owner(db, owner_id=current_user.id)
+    return items

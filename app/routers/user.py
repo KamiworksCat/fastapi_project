@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.database import get_db
 from app.schema import user as schemas
-from models import user
+from app.models import user
 from app.utils import get_current_active_user
 
 router = APIRouter()
@@ -34,25 +34,21 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db),
     db_user = crud.user.get_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.user.create_user(db=db, user=user)
+    return crud.user.create(db_session=db, obj_in=user)
 
 
 @router.get("/", response_model=List[schemas.User], summary="Get list of active users")
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db),
-               user: user.User = Depends(get_current_active_user)):
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
-    If user is not administrator, this api will only return current user
+    Return list of all users
     """
-    if user.is_administrator:
-        users = crud.user.get_multi(db, skip=skip, limit=limit)
-    else:
-        users = get_current_active_user()
+    users = crud.user.get_multi(db, skip=skip, limit=limit)
     return users
 
 
 @router.get("/{user_id}", response_model=schemas.User, summary="Read specific user")
 def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.user.get(db, user_id=user_id)
+    db_user = crud.user.get(db, obj_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
@@ -63,7 +59,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db),
                 user: user.User = Depends(get_current_active_user)):
     if not user.is_administrator:
         raise HTTPException(status_code=403, detail="User cannot perform this action")
-    db_user = crud.user.get(db, user_id=user_id)
+    db_user = crud.user.get(db, obj_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     crud.user.remove(db_session=db, obj_id=user_id)
@@ -71,23 +67,23 @@ def delete_user(user_id: int, db: Session = Depends(get_db),
 
 
 @router.put("/{user_id}", response_model=schemas.User)
-def update_user(
-    *,
-    db: Session = Depends(get_db),
-    user_id: int,
-    user_in: schemas.UserUpdate,
-    current_user: user.User = Depends(get_current_active_user),
-):
+def update_user(*,
+                db: Session = Depends(get_db),
+                user_id: int,
+                user_in: schemas.UserUpdate,
+                current_user: user.User = Depends(get_current_active_user)):
     """
     Update a user.
     """
-    user = crud.user.get(db, id=user_id)
+    user = crud.user.get(db, obj_id=user_id)
     if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="The user with this username does not exist in the system",
-        )
-    elif user != current_user or not current_user.is_administrator:
+        raise HTTPException(status_code=404,
+                            detail="The user with this username does not exist in the system")
+    elif user != current_user and not current_user.is_administrator:
         raise HTTPException(status_code=403, detail="You may only update your own profile")
+    if not current_user.is_administrator:
+        # If user is not administrator, user should not be able to set admin right and update quota
+        user_in.is_administrator = user.is_administrator
+        user_in.quota = user.quota
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
     return user
