@@ -1,6 +1,8 @@
 # fastapi_project
 Small project build using fastapi with python
 
+API docs is up on http://68.183.177.41:8000/docs
+
 Modules
 ========
 
