@@ -33,7 +33,7 @@ def create_item(*, db: Session = Depends(get_db),
     Create new item.
     """
     # Check if user quota is filled before creating the item
-    if len(current_user.items) >= current_user.quota:
+    if current_user.quota != 0 and len(current_user.items) >= current_user.quota:
         raise HTTPException(status_code=403, detail="You have already reached the max quota")
     item_in.identifier = str(uuid.uuid4())
     item = crud.item.create_with_owner(db_session=db, obj_in=item_in, owner_id=current_user.id)
