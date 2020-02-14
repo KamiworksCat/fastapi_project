@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from app import crud
 from app.database import db_session
 from app.schema.user import UserCreate
-from app.tests.utils import random_lower_string
+from app.tests.utils.general import random_lower_string
 
 
 def test_user_crud():
